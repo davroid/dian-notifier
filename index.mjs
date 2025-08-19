@@ -106,10 +106,28 @@ async function checkCityAvailability(page, city) {
     return sameCityName;
   });
   
-  if (!cityAvailable) return console.log(`No hay citas disponibles en ${city}`);
-  
-  await fetch(ntfyTopic, {
+  const appointmentMsg = cityAvailable
+    ? `Citas disponibles en ${city} para la inscripción en RUT!`
+    : `No hay citas disponibles en ${city}`;
+
+  console.log(appointmentMsg);
+  if (!cityAvailable) return;
+
+  const result = await fetch(ntfyTopic, {
     method: 'POST',
-    body: `¡Citas disponibles en ${city} para la inscripción en RUT!`,
-  });
+    body: appointmentMsg,
+    headers: {
+      'Priority': 'urgent',
+      'Click': dianAppointmentUrl,
+      'Title': 'Citas DIAN disponibles!',
+      'Tags': 'dian,appointment,available',
+    }
+  }).then(res => res.json());
+
+  const fetchMessage = result.id
+    ? `Notificación enviada! ID: ${result.id}`
+    : `Error enviando la notificación: ${result.error} - ${result.link}`;
+
+  console.log(fetchMessage);
 }
+
